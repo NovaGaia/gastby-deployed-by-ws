@@ -6,7 +6,7 @@ const { spawn, exec } = require('node:child_process');
 
 // Initialize express and define a port
 const app = express();
-const PORT = process.env.API_PORT;
+const PORT = process.env.API_PORT || 3000;
 
 // Tell express to use body-parser's JSON parsing
 app.use(bodyParser.json());
