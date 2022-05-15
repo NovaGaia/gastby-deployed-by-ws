@@ -83,7 +83,10 @@ app.post('/hooks/trigger/build', (req, res) => {
     console.log('Security check Bearer 👌🏻');
     exec('echo building > ./status.txt');
     console.log('CMD is building... ⌛');
-    const build = spawn('npm', ['run', 'build']); // <-- what to do if security validate
+    const build = spawn('npm', ['run', 'build'], {
+      detached: true,
+      stdio: 'ignore',
+    }); // <-- what to do if security validate
     build.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
     });
