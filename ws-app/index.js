@@ -71,7 +71,7 @@ app.post('/hooks/trigger/build', (req, res) => {
     res.status(401).send({ status: 'Authorization required' }).end(); // Responding is important
     return;
   }
-  if (process.env.API_DEBUG) {
+  if (process.env.API_DEBUG === 'true' || process.env.API_DEBUG === true) {
     console.log('process.env.API_SECRET', process.env.API_SECRET);
     console.log('req.headers.authorization', req.headers.authorization);
     console.log(
