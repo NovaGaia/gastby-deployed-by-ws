@@ -71,6 +71,14 @@ app.post('/hooks/trigger/build', (req, res) => {
     res.status(401).send({ status: 'Authorization required' }).end(); // Responding is important
     return;
   }
+  if (process.env.API_DEBUG) {
+    console.log('process.env.API_SECRET', process.env.API_SECRET);
+    console.log('req.headers.authorization', req.headers.authorization);
+    console.log(
+      'req.headers.authorization.split(" ")[1]',
+      req.headers.authorization.split(' ')[1]
+    );
+  }
   if (process.env.API_SECRET === req.headers.authorization.split(' ')[1]) {
     console.log('Security check Bearer 👌🏻');
     exec('echo building > ./status.txt');
