@@ -1,0 +1,11 @@
+{
+  "name": "Webhooks Express server",
+  "version": "0.1.0",
+  "description": "Documentation of our APIs",
+  "sampleUrl": true,
+  "order": ["Triggers", "Checks", "Utils"],
+  "header": {
+    "title": "Introduction",
+    "filename": "header.md"
+  }
+}

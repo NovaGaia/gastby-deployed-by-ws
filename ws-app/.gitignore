@@ -1,0 +1,8 @@
+/thunder-tests
+/node_modules
+
+package-lock.json
+
+status.txt
+.env
+check.txt
