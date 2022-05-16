@@ -3,13 +3,20 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const { spawn, exec } = require('node:child_process');
+var timeout = require('connect-timeout');
 
 // Initialize express and define a port
 const app = express();
+app.use(timeout('1m'));
+app.use(haltOnTimedout);
 const PORT = process.env.API_PORT || 3000;
 
 // Tell express to use body-parser's JSON parsing
 app.use(bodyParser.json());
+
+function haltOnTimedout(req, res, next) {
+  if (!req.timedout) next();
+}
 
 /**
  * @api {get} /docs/ Current documentation
