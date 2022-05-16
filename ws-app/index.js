@@ -96,6 +96,7 @@ app.post('/hooks/trigger/build', (req, res) => {
     });
 
     build.on('close', (code) => {
+      exec('echo inactive > ./status.txt');
       if (code !== 0) {
         console.log(`build process exited with code ${code}`);
         res.status(500).send({ status: 'failed', errorCode: code }).end(); // Responding is important
@@ -103,13 +104,108 @@ app.post('/hooks/trigger/build', (req, res) => {
       } else {
         console.log('CMD builded 🚀');
       }
-      exec('echo inactive > ./status.txt');
       res.status(200).send({ status: 'success' }).end(); // Responding is important
+    });
+  } else {
+    exec('echo inactive > ./status.txt');
+    console.log('Security KO Bearer ⛔');
+    res.statusMessage = 'Authorization KO';
+    res.status(401).send({ status: 'Authorization KO' }).end(); // Responding is important
+  }
+});
+
+/**
+ * @api {post} /v2/hooks/trigger/build Trigger Build Action
+ * @apiName TriggerBuild
+ * @apiGroup Triggers
+ * @apiPermission Securized by Bearer
+ *
+ * @apiHeader {String} Authorization secret Bearer of the Webhook (required).
+ * @apiHeaderExample {Header} Authorization-Exemple
+ *     "Authorization: Bearer 5f048fe"
+ *
+ * @apiSuccess {Object} result Result of the trigger.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "status": "success"
+ *     }
+ *
+ * @apiError (500) TriggerBuildThrowError Build triggered by calling hook API generate an error.
+ *
+ * @apiErrorExample (500) Error-Response (Action triggered error):
+ *     HTTP/1.1 500 KO
+ *     {
+ *       "status": "failed",
+ *       "errorCode": "<code>"
+ *     }
+ *
+ * @apiError (401) AuthenticationError-Response The Bearer not match or absent.
+ *
+ * @apiErrorExample (401) Error-Response (Bearer error):
+ *     HTTP/1.1 401 KO
+ *     {
+ *       "status": "Authorization KO"
+ *     }
+
+ *
+ * @apiDescription ENDPOINT to trigger a biuld. Action securized by a Bearer.
+ *
+ * During the action, the `/hooks/check/build` endpoint return `status: building`.
+ *
+ * After the action ended, the `/hooks/check/build` endpoint return `status: inactive`.
+ */
+app.post('/v2/hooks/trigger/build', (req, res) => {
+  if (
+    !!!req.headers.authorization ||
+    !!!req.headers.authorization.split(' ')[1]
+  ) {
+    console.log('Security KO Bearer ⛔');
+    res.status(401).send({ status: 'Authorization required' }); // Responding is important
+    return;
+  }
+  if (process.env.API_DEBUG === 'true' || process.env.API_DEBUG === true) {
+    console.log('process.env.API_SECRET', process.env.API_SECRET);
+    console.log('req.headers.authorization', req.headers.authorization);
+    console.log(
+      'req.headers.authorization.split(" ")[1]',
+      req.headers.authorization.split(' ')[1]
+    );
+  }
+
+  if (process.env.API_SECRET === req.headers.authorization.split(' ')[1]) {
+    const response = {};
+
+    console.log('Security check Bearer 👌🏻');
+    exec('echo building > ./status.txt');
+    console.log('CMD is building... ⌛');
+    exec('npm run build', (err, stdout, stderr) => {
+      exec('echo inactive > ./status.txt');
+      if (err) {
+        console.error(err);
+        res.statusMessage = err;
+        response['status'] = 'Error (err) ⛔';
+        response['message'] = err;
+        res.status(500).send(response);
+        return;
+      }
+      if (stdout.trim() !== '') {
+        response['status'] = 'OK (stdout) 👌🏻';
+        response['message'] = stdout;
+        res.send(response);
+        return;
+      }
+      if (stderr.trim() !== '') {
+        response['status'] = 'Error (stderr) ⛔';
+        response['message'] = stderr;
+        return;
+      }
     });
   } else {
     console.log('Security KO Bearer ⛔');
     res.statusMessage = 'Authorization KO';
-    res.status(401).send({ status: 'Authorization KO' }).end(); // Responding is important
+    res.status(401).send({ status: 'Authorization KO' }); // Responding is important
   }
 });
 
