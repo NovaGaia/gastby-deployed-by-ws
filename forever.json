@@ -3,6 +3,5 @@
   "append": true,
   "watch": true,
   "script": "server.js",
-  "sourceDir": "/home/jelastic/ROOT",
-  "watchIgnore": "status.txt"
+  "sourceDir": "/home/jelastic/ROOT"
 }
