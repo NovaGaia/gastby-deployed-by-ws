@@ -164,6 +164,17 @@ app.post('/hooks/trigger/build', (req, res) => {
  * After the action ended, the `/hooks/check/build` endpoint return `status: inactive`.
  */
 app.post('/v2/hooks/trigger/build', (req, res) => {
+  if (process.env.API_DEBUG === 'true' || process.env.API_DEBUG === true) {
+    console.log('process.env.API_SECRET', process.env.API_SECRET);
+    console.log('req.headers', req.headers);
+    console.log('req.headers.authorization', req.headers.authorization);
+    if (req.headers.authorization) {
+      console.log(
+        'req.headers.authorization.split(" ")[1]',
+        req.headers.authorization.split(' ')[1]
+      );
+    }
+  }
   if (
     !!!req.headers.authorization ||
     !!!req.headers.authorization.split(' ')[1]
@@ -171,14 +182,6 @@ app.post('/v2/hooks/trigger/build', (req, res) => {
     console.log('Security KO Bearer ⛔');
     res.status(401).send({ status: 'Authorization required' }); // Responding is important
     return;
-  }
-  if (process.env.API_DEBUG === 'true' || process.env.API_DEBUG === true) {
-    console.log('process.env.API_SECRET', process.env.API_SECRET);
-    console.log('req.headers.authorization', req.headers.authorization);
-    console.log(
-      'req.headers.authorization.split(" ")[1]',
-      req.headers.authorization.split(' ')[1]
-    );
   }
 
   if (process.env.API_SECRET === req.headers.authorization.split(' ')[1]) {
