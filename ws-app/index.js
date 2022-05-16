@@ -116,7 +116,7 @@ app.post('/hooks/trigger/build', (req, res) => {
 
 /**
  * @api {post} /v2/hooks/trigger/build Trigger Build Action
- * @apiName TriggerBuild
+ * @apiName TriggerBuildV2
  * @apiGroup Triggers
  * @apiPermission Securized by Bearer
  *
