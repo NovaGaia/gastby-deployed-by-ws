@@ -1,21 +1,21 @@
-require('dotenv').config();
+require("dotenv").config()
 // Require express, body-parser and child_process
-const express = require('express');
-const bodyParser = require('body-parser');
-const { spawn, exec } = require('node:child_process');
-var timeout = require('connect-timeout');
+const express = require("express")
+const bodyParser = require("body-parser")
+const { spawn, exec } = require("node:child_process")
+var timeout = require("connect-timeout")
 
 // Initialize express and define a port
-const app = express();
-app.use(timeout('1m'));
-app.use(haltOnTimedout);
-const PORT = process.env.API_PORT || 3000;
+const app = express()
+app.use(timeout(process.env.API_TIMEOUT || "1m"))
+app.use(haltOnTimedout)
+const PORT = process.env.API_PORT || 3000
 
 // Tell express to use body-parser's JSON parsing
-app.use(bodyParser.json());
+app.use(bodyParser.json())
 
 function haltOnTimedout(req, res, next) {
-  if (!req.timedout) next();
+  if (!req.timedout) next()
 }
 
 /**
@@ -25,10 +25,11 @@ function haltOnTimedout(req, res, next) {
  * @apiSampleRequest off
  * @apiDescription ENDPOINT to read the APIs documentation.
  */
-app.use('/docs', express.static('docs'));
+app.use("/docs", express.static("docs"))
 
 /**
- * @api {post} /hooks/trigger/build Trigger Build Action
+ * @api {post} /v1/hooks/trigger/build Trigger Build Action
+ * @apiDeprecated use now (#Triggers:TriggerBuildV2).
  * @apiName TriggerBuild
  * @apiGroup Triggers
  * @apiPermission Securized by Bearer
@@ -69,57 +70,57 @@ app.use('/docs', express.static('docs'));
  *
  * After the action ended, the `/hooks/check/build` endpoint return `status: inactive`.
  */
-app.post('/hooks/trigger/build', (req, res) => {
+app.post("/v1/hooks/trigger/build", (req, res) => {
   if (
     !!!req.headers.authorization ||
-    !!!req.headers.authorization.split(' ')[1]
+    !!!req.headers.authorization.split(" ")[1]
   ) {
-    console.log('Security KO Bearer ⛔');
-    res.status(401).send({ status: 'Authorization required' }).end(); // Responding is important
-    return;
+    console.log("Security KO Bearer ⛔")
+    res.status(401).send({ status: "Authorization required" }).end() // Responding is important
+    return
   }
-  if (process.env.API_DEBUG === 'true' || process.env.API_DEBUG === true) {
-    console.log('process.env.API_SECRET', process.env.API_SECRET);
-    console.log('req.headers.authorization', req.headers.authorization);
+  if (process.env.API_DEBUG === "true" || process.env.API_DEBUG === true) {
+    console.log("process.env.API_SECRET", process.env.API_SECRET)
+    console.log("req.headers.authorization", req.headers.authorization)
     console.log(
       'req.headers.authorization.split(" ")[1]',
-      req.headers.authorization.split(' ')[1]
-    );
+      req.headers.authorization.split(" ")[1]
+    )
   }
-  if (process.env.API_SECRET === req.headers.authorization.split(' ')[1]) {
-    console.log('Security check Bearer 👌🏻');
-    exec('echo building > ./status.txt');
-    console.log('CMD is building... ⌛');
-    const build = spawn('npm', ['run', 'build'], {
+  if (process.env.API_SECRET === req.headers.authorization.split(" ")[1]) {
+    console.log("Security check Bearer 👌")
+    exec("echo building > ./status.txt")
+    console.log("CMD is building... ⌛")
+    const build = spawn("npm", ["run", "build"], {
       detached: true,
-      stdio: 'ignore',
-    }); // <-- what to do if security validate
-    build.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-    });
+      stdio: "ignore",
+    }) // <-- what to do if security validate
+    build.stdout.on("data", data => {
+      console.log(`stdout: ${data}`)
+    })
 
-    build.stderr.on('data', (data) => {
-      console.error(`stderr: ${data}`);
-    });
+    build.stderr.on("data", data => {
+      console.error(`stderr: ${data}`)
+    })
 
-    build.on('close', (code) => {
-      exec('echo inactive > ./status.txt');
+    build.on("close", code => {
+      exec("echo inactive > ./status.txt")
       if (code !== 0) {
-        console.log(`build process exited with code ${code}`);
-        res.status(500).send({ status: 'failed', errorCode: code }).end(); // Responding is important
-        return;
+        console.log(`build process exited with code ${code}`)
+        res.status(500).send({ status: "failed", errorCode: code }).end() // Responding is important
+        return
       } else {
-        console.log('CMD builded 🚀');
+        console.log("CMD builded 🚀")
       }
-      res.status(200).send({ status: 'success' }).end(); // Responding is important
-    });
+      res.status(200).send({ status: "success" }).end() // Responding is important
+    })
   } else {
-    exec('echo inactive > ./status.txt');
-    console.log('Security KO Bearer ⛔');
-    res.statusMessage = 'Authorization KO';
-    res.status(401).send({ status: 'Authorization KO' }).end(); // Responding is important
+    exec("echo inactive > ./status.txt")
+    console.log("Security KO Bearer ⛔")
+    res.statusMessage = "Authorization KO"
+    res.status(401).send({ status: "Authorization KO" }).end() // Responding is important
   }
-});
+})
 
 /**
  * @api {post} /v2/hooks/trigger/build Trigger Build Action (v2)
@@ -163,70 +164,73 @@ app.post('/hooks/trigger/build', (req, res) => {
  *
  * After the action ended, the `/hooks/check/build` endpoint return `status: inactive`.
  */
-app.post('/v2/hooks/trigger/build', (req, res) => {
-  if (process.env.API_DEBUG === 'true' || process.env.API_DEBUG === true) {
-    console.log('process.env.API_SECRET', process.env.API_SECRET);
-    console.log('req.headers', req.headers);
-    console.log('req.headers.authorization', req.headers.authorization);
+app.post("/v2/hooks/trigger/build", (req, res) => {
+  if (process.env.API_DEBUG === "true" || process.env.API_DEBUG === true) {
+    console.log("process.env.API_SECRET", process.env.API_SECRET)
+    console.log("req.headers", req.headers)
+    console.log("req.headers.authorization", req.headers.authorization)
     if (req.headers.authorization) {
       console.log(
         'req.headers.authorization.split(" ")[1]',
-        req.headers.authorization.split(' ')[1]
-      );
+        req.headers.authorization.split(" ")[1]
+      )
     }
   }
   if (
     !!!req.headers.authorization ||
-    !!!req.headers.authorization.split(' ')[1]
+    !!!req.headers.authorization.split(" ")[1]
   ) {
-    console.log('Security KO Bearer ⛔');
-    res.status(401).send({ status: 'Authorization required' }); // Responding is important
-    return;
+    console.log("Security KO Bearer ⛔")
+    res.status(401).send({ status: "Authorization required" }) // Responding is important
+    return
   }
 
-  if (process.env.API_SECRET === req.headers.authorization.split(' ')[1]) {
-    const response = {};
+  if (process.env.API_SECRET === req.headers.authorization.split(" ")[1]) {
+    const response = {}
 
-    console.log('Security check Bearer 👌🏻');
-    exec('echo building > ./status.txt');
-    console.log('CMD is building... ⌛');
-    exec('npm run build', (err, stdout, stderr) => {
+    console.log("Security check Bearer 👌")
+    exec("echo building > ./status.txt")
+    console.log("CMD is building... ⌛")
+    exec("npm run build", (err, stdout, stderr) => {
       if (err) {
-        res.statusMessage = err;
-        response['status'] = 'Error (err) ⛔';
-        response['message'] = err;
-        res.status(500).send(response);
-        console.error('err', err);
-        exec('echo inactive > ./status.txt');
-        return;
+        res.statusMessage = err
+        response["status"] = "Error (err) ⛔"
+        response["message"] = err
+        res.status(500).send(response)
+        console.error("err", err)
+        exec("echo inactive > ./status.txt")
+        return
       }
-      if (stdout.trim() !== '') {
-        response['status'] = 'OK (stdout) 👌🏻';
-        response['message'] = stdout;
-        res.send(response);
+      if (stdout.trim() !== "") {
+        response["status"] = "OK (stdout) 👌"
+        response["message"] = stdout
+        res.send(response)
         if (
-          process.env.API_DEBUG === 'true' ||
+          process.env.API_DEBUG === "true" ||
           process.env.API_DEBUG === true
         ) {
-          console.log('stdout', stdout);
+          console.log("CMD is builded! 🚀")
+          console.log("stdout", stdout)
+        } else {
+          console.log("MD is builded! 🚀")
         }
-        exec('echo inactive > ./status.txt');
-        return;
+        exec("echo inactive > ./status.txt")
+        return
       }
-      if (stderr.trim() !== '') {
-        response['status'] = 'Error (stderr) ⛔';
-        response['message'] = stderr;
-        console.error('stderr', stderr);
-        exec('echo inactive > ./status.txt');
-        return;
+      if (stderr.trim() !== "") {
+        response["status"] = "Error (stderr) ⛔"
+        response["message"] = stderr
+        console.error("stderr", stderr)
+        exec("echo inactive > ./status.txt")
+        return
       }
-    });
+    })
   } else {
-    console.log('Security KO Bearer ⛔');
-    res.statusMessage = 'Authorization KO';
-    res.status(401).send({ status: 'Authorization KO' }); // Responding is important
+    console.log("Security KO Bearer ⛔")
+    res.statusMessage = "Authorization KO"
+    res.status(401).send({ status: "Authorization KO" }) // Responding is important
   }
-});
+})
 
 /**
  * @api {get} /hooks/check/build Request Trigger Build status
@@ -265,24 +269,24 @@ app.post('/v2/hooks/trigger/build', (req, res) => {
  *
  * Responses possibilities : `inactive`, `building` and `empty...`
  */
-app.get('/hooks/check/build', (req, res) => {
-  const response = {};
+app.get("/hooks/check/build", (req, res) => {
+  const response = {}
   exec('echo "$(<status.txt )"', (err, stdout, stderr) => {
     if (err) {
-      console.error(err);
-      res.statusMessage = err;
-      res.status(500).send({ status: 'Error', message: err }).end();
-      return;
+      console.error(err)
+      res.statusMessage = err
+      res.status(500).send({ status: "Error", message: err }).end()
+      return
     }
-    if (stdout.trim() === '') {
-      response['status'] = 'Hook has never run. Come back later...';
-      res.send(response);
+    if (stdout.trim() === "") {
+      response["status"] = "Hook has never run. Come back later..."
+      res.send(response)
     } else {
-      response['status'] = stdout.trim();
-      res.send(response);
+      response["status"] = stdout.trim()
+      res.send(response)
     }
-  });
-});
+  })
+})
 
 // Start express on the defined port
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))

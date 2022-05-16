@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-cd ./gatsby && npm install && npm run build
+npm install && npm run build && node server.js
 # cd ../ws-app && npm install &&  pm2 start ecosystem.config.js

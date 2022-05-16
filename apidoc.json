@@ -6,6 +6,6 @@
   "order": ["Triggers", "Checks", "Utils"],
   "header": {
     "title": "Introduction",
-    "filename": "header.md"
+    "filename": "apiDocUtils/header.md"
   }
 }
