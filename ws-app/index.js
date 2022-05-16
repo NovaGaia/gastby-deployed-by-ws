@@ -115,7 +115,7 @@ app.post('/hooks/trigger/build', (req, res) => {
 });
 
 /**
- * @api {post} /v2/hooks/trigger/build Trigger Build Action
+ * @api {post} /v2/hooks/trigger/build Trigger Build Action (v2)
  * @apiName TriggerBuildV2
  * @apiGroup Triggers
  * @apiPermission Securized by Bearer
@@ -181,24 +181,33 @@ app.post('/v2/hooks/trigger/build', (req, res) => {
     exec('echo building > ./status.txt');
     console.log('CMD is building... ⌛');
     exec('npm run build', (err, stdout, stderr) => {
-      exec('echo inactive > ./status.txt');
       if (err) {
-        console.error(err);
         res.statusMessage = err;
         response['status'] = 'Error (err) ⛔';
         response['message'] = err;
         res.status(500).send(response);
+        console.error('err', err);
+        exec('echo inactive > ./status.txt');
         return;
       }
       if (stdout.trim() !== '') {
         response['status'] = 'OK (stdout) 👌🏻';
         response['message'] = stdout;
         res.send(response);
+        if (
+          process.env.API_DEBUG === 'true' ||
+          process.env.API_DEBUG === true
+        ) {
+          console.log('stdout', stdout);
+        }
+        exec('echo inactive > ./status.txt');
         return;
       }
       if (stderr.trim() !== '') {
         response['status'] = 'Error (stderr) ⛔';
         response['message'] = stderr;
+        console.error('stderr', stderr);
+        exec('echo inactive > ./status.txt');
         return;
       }
     });
